@@ -24,7 +24,7 @@
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _log.LogInformation("StartAsync");
+            _log.LogInformation($"StartAsync - seqserver: {_myconfig.hostUrl}");
             return Task.CompletedTask;
         }
 

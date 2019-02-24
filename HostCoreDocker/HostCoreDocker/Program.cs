@@ -11,8 +11,29 @@
     {
         static async System.Threading.Tasks.Task Main(string[] args)
         {
-            //Setup and configure SeriLog to write to console
-            Log.Logger = new LoggerConfiguration()
+            try
+            {
+                //Create the generic host and setup configurations
+                var host = CreateHostBuilder(args)
+                         .Build();
+
+                var config = host.Services.GetService<IConfiguration>();
+                
+                var sectionExists = config.GetSection("seqSettings").Exists();
+
+                //Load configuration so it can be used as part of this setup
+                MyConfiguration myconfig = new MyConfiguration();
+                if (sectionExists)
+                    config.GetSection("seqSettings").Bind(myconfig);
+                else
+                    throw new ConfigurationException()
+                    {
+                        ConfigurationKey = "seqSetting",
+                        ConfigurationDescription = "URL pointing to SEQ Server for logging is not specified or found in the configuration file."
+                    };
+
+                //Setup and configure SeriLog to write to console
+                var logger = new LoggerConfiguration()
                             .Enrich.FromLogContext()
                             .Enrich.WithThreadId()
                             .MinimumLevel.Debug()
@@ -20,12 +41,9 @@
                             .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}][{ThreadId}] {Message:lj} {Properties}{NewLine}{Exception}")
                             .CreateLogger();
 
-            try
-            {
-                 //Create and run the generic host 
-                await CreateHostBuilder(args)
-                         .Build()
-                         .RunAsync();
+                Log.Logger = logger;
+
+                await host.RunAsync();
             }
             catch (Exception ex)
             {
@@ -54,7 +72,6 @@
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<WorkerHostedService>();
-                    services.AddLogging();
                 })
                 .UseSerilog()
                 .UseConsoleLifetime();
