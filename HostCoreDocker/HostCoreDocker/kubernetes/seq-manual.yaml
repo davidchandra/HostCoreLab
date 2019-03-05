@@ -1,0 +1,24 @@
+#kubernetes configuration file for setting up seq server for dev purposes
+#activate this using tehe following command: kubectl create -f seq-manual.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seq-pod
+  labels:
+    name: seq
+spec:
+  containers:
+  - name: seq-server
+    image: datalust/seq:5
+    restartPolicy: Always
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+    command: ['/run.sh']
+    ports:
+      - containerPort: 80
+      - containerPort: 4351
+    env:
+      - name: ACCEPT_EULA
+        value: "Y"
