@@ -12,3 +12,7 @@ Environment setup for this project:
 - Windows 10 Professional OS for development
 - Docker for Windows using Linux containers
 - Seq server hosted in the kubernetes pod (docker container)
+
+Other libraries utilised for this project:
+- Serilog: for loggin
+- McMaster Command Line util: for processing command line options
