@@ -1,7 +1,7 @@
-FROM microsoft/dotnet:2.2-runtime-stretch-slim AS base
+FROM mcr.microsoft.com/dotnet/core/runtime:2.2-stretch-slim AS base
 WORKDIR /app
 
-FROM microsoft/dotnet:2.2-sdk-stretch AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
 WORKDIR /src
 COPY ["HostCoreDocker/HostCoreDocker.csproj", "HostCoreDocker/"]
 RUN dotnet restore "HostCoreDocker/HostCoreDocker.csproj"

@@ -6,13 +6,31 @@
     using Microsoft.Extensions.DependencyInjection;
     using Serilog;
     using System.IO;
+    using McMaster.Extensions.CommandLineUtils;
 
     class Program
     {
         static async System.Threading.Tasks.Task Main(string[] args)
         {
+            //Setup and configure SeriLog to write to console
+            var logger = new LoggerConfiguration()
+                        .Enrich.FromLogContext()
+                        .Enrich.WithThreadId()
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
+                        .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}][{ThreadId}] {Message:lj} {Properties}{NewLine}{Exception}")
+                        .CreateLogger();
+
+            Log.Logger = logger;
+
             try
             {
+                //Parse the command line arguments
+                var appArgs = new CommandLineApplication();
+                appArgs.HelpOption("-h|--help");
+                var optSeqServer = appArgs.Option("-s|--seq <Seq Server URL>", "Seq Server", CommandOptionType.SingleValue);
+                var seqServer = optSeqServer.Value();
+
                 //Create the generic host and setup configurations
                 var host = CreateHostBuilder(args)
                          .Build();
@@ -32,16 +50,7 @@
                         ConfigurationDescription = "URL pointing to SEQ Server for logging is not specified or found in the configuration file."
                     };
 
-                //Setup and configure SeriLog to write to console
-                var logger = new LoggerConfiguration()
-                            .Enrich.FromLogContext()
-                            .Enrich.WithThreadId()
-                            .MinimumLevel.Debug()
-                            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
-                            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}][{ThreadId}] {Message:lj} {Properties}{NewLine}{Exception}")
-                            .CreateLogger();
-
-                Log.Logger = logger;
+ 
 
                 await host.RunAsync();
             }
